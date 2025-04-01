@@ -128,7 +128,12 @@ const checkPortAvailable = (port: number): Promise<boolean> => {
 
 const startAgents = async () => {
   const directClient = new DirectClient();
-  let serverPort = parseInt(settings.SERVER_PORT || "3000");
+
+  let chatEndpointConfig = {
+    serverPort: parseInt(settings.SERVER_PORT || "3000"),
+    changed: false
+  };
+
   const args = parseArguments();
 
   let charactersArg = args.characters || args.character;
@@ -147,9 +152,10 @@ const startAgents = async () => {
     elizaLogger.error("Error starting agents:", error);
   }
 
-  while (!(await checkPortAvailable(serverPort))) {
-    elizaLogger.warn(`Port ${serverPort} is in use, trying ${serverPort + 1}`);
-    serverPort++;
+  while (!(await checkPortAvailable(chatEndpointConfig.serverPort))) {
+    elizaLogger.warn(`Port ${chatEndpointConfig.serverPort} is in use, trying ${chatEndpointConfig.serverPort + 1}`);
+    chatEndpointConfig.serverPort++;
+    chatEndpointConfig.changed = true;
   }
 
   // upload some agent functionality into directClient
@@ -158,16 +164,16 @@ const startAgents = async () => {
     return startAgent(character, directClient);
   };
 
-  directClient.start(serverPort);
+  directClient.start(chatEndpointConfig.serverPort);
 
-  if (serverPort !== parseInt(settings.SERVER_PORT || "3000")) {
-    elizaLogger.log(`Server started on alternate port ${serverPort}`);
+  if (chatEndpointConfig.changed) {
+    elizaLogger.log(`Server started on alternate port ${chatEndpointConfig.serverPort}`);
   }
 
   const isDaemonProcess = process.env.DAEMON_PROCESS === "true";
   if(!isDaemonProcess) {
     elizaLogger.log("Chat started. Type 'exit' to quit.");
-    const chat = startChat(characters);
+    const chat = startChat(characters, chatEndpointConfig);
     chat();
   }
 };

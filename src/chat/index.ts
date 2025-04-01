@@ -11,17 +11,15 @@ rl.on("SIGINT", () => {
   process.exit(0);
 });
 
-async function handleUserInput(input, agentId) {
+async function handleUserInput(input, agentId, chatEndpointConfig) {
   if (input.toLowerCase() === "exit") {
     rl.close();
     process.exit(0);
   }
 
   try {
-    const serverPort = parseInt(settings.SERVER_PORT || "3000");
-
     const response = await fetch(
-      `http://localhost:${serverPort}/${agentId}/message`,
+      `http://localhost:${chatEndpointConfig.serverPort}/${agentId}/message`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,11 +38,11 @@ async function handleUserInput(input, agentId) {
   }
 }
 
-export function startChat(characters) {
+export function startChat(characters, chatEndpointConfig) {
   function chat() {
     const agentId = characters[0].name ?? "Agent";
     rl.question("You: ", async (input) => {
-      await handleUserInput(input, agentId);
+      await handleUserInput(input, agentId, chatEndpointConfig);
       if (input.toLowerCase() !== "exit") {
         chat(); // Loop back to ask another question
       }
