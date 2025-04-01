@@ -153,8 +153,7 @@ const startAgents = async () => {
   }
 
   while (!(await checkPortAvailable(chatEndpointConfig.serverPort))) {
-    elizaLogger.warn(`Port ${chatEndpointConfig.serverPort} is in use, trying ${chatEndpointConfig.serverPort + 1}`);
-    chatEndpointConfig.serverPort++;
+    elizaLogger.warn(`Port ${chatEndpointConfig.serverPort} is in use, trying ${++chatEndpointConfig.serverPort}`);
     chatEndpointConfig.changed = true;
   }
 
